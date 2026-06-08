@@ -169,6 +169,11 @@ for (let i = 0; i < chunks.length; i++) {
     const generatedQuestions =
       await generateQuizFromChunk(chunks[i]) || [];
 
+      console.log(
+  "Generated:",
+  generatedQuestions.length
+);
+
     const validQuestions =
       Array.isArray(generatedQuestions)
         ? validateQuestions(generatedQuestions)

@@ -1,5 +1,6 @@
 import groq from "../groq.js";
-
+import { jsonrepair }
+from "jsonrepair";
 // ================= CLEAN RESPONSE =================
 
 function cleanJsonResponse(text) {
@@ -20,7 +21,9 @@ function safeJsonParse(text) {
 
   try {
 
-    return JSON.parse(text);
+    return JSON.parse(
+  jsonrepair(text)
+);
 
   } catch (error) {
 
@@ -76,7 +79,7 @@ export async function generateQuizFromChunk(
 
         temperature: 0.2,
 
-     max_tokens: 600,
+    max_tokens: 2000,
 
         messages: [
 
@@ -91,7 +94,7 @@ STRICT RULES:
 
 1. No markdown
 2. No explanations outside JSON
-3. Generate exactly 8 quiz questions
+3. Generate exactly 4 quiz questions
 4. Each question MUST contain:
    - question
    - options
