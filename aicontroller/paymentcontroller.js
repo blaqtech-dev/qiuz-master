@@ -23,27 +23,17 @@ export async function verifyPayment(req, res) {
 
     const payment = response.data.data;
 
-    // ✅ FIXED CHECK
-    if (payment.status !== "success") {
+    if (!payment || payment.status !== "success") {
       return res.status(400).json({
         success: false,
         message: "Payment not successful",
       });
     }
 
-    const { error } = await supabase
+    await supabase
       .from("profiles")
-      .update({
-        plan: "pro",
-      })
+      .update({ plan: "pro" })
       .eq("id", userId);
-
-    if (error) {
-      return res.status(500).json({
-        success: false,
-        message: error.message,
-      });
-    }
 
     return res.json({
       success: true,
@@ -51,7 +41,7 @@ export async function verifyPayment(req, res) {
     });
 
   } catch (error) {
-    console.error("VERIFY PAYMENT ERROR:", error.response?.data || error.message);
+    console.log("VERIFY ERROR:", error.response?.data || error.message);
 
     return res.status(500).json({
       success: false,
