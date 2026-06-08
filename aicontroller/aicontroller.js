@@ -164,31 +164,23 @@ for (let i = 0; i < chunks.length; i++) {
 
   try {
 
-    console.log(
-      `🧠 Processing Chunk ${i + 1}/${chunks.length}`
-    );
+    console.log(`🧠 Processing Chunk ${i + 1}/${chunks.length}`);
 
     const generatedQuestions =
-      await generateQuizFromChunk(
-        chunks[i]
-      );
+      await generateQuizFromChunk(chunks[i]) || [];
 
-  const generatedQuestions =
-  await generateQuizFromChunk(chunks[i]) || [];
+    const validQuestions =
+      Array.isArray(generatedQuestions)
+        ? validateQuestions(generatedQuestions)
+        : [];
 
-const validQuestions =
-  Array.isArray(generatedQuestions)
-    ? validateQuestions(generatedQuestions)
-    : [];
+    chunkResults.push(validQuestions);
 
   } catch (error) {
 
     failedChunks++;
 
-    console.log(
-      `❌ Chunk ${i + 1} Failed:`,
-      error.message
-    );
+    console.log(`❌ Chunk ${i + 1} Failed:`, error.message);
   }
 }
     // ================= MERGE QUESTIONS =================
