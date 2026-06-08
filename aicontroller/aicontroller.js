@@ -24,25 +24,29 @@ function cleanText(text = "") {
 
 // ================= VALIDATE QUESTIONS =================
 function validateQuestions(questions = []) {
+
   return questions.filter((q) => {
+
     if (
       !q?.question ||
       !Array.isArray(q?.options) ||
       q.options.length !== 4 ||
       !q?.answer ||
       !q?.explanation
-    ) return false;
+    ) {
+      return false;
+    }
 
-    const options = q.options.map(o => o.trim());
-    const answer = q.answer.trim();
+    const clean = (str) =>
+      str
+        .toLowerCase()
+        .trim()
+        .replace(/\s+/g, " ");
 
-    // FIX: match loosely instead of exact string
-    const isValidAnswer =
-      options.some(opt =>
-        opt.toLowerCase() === answer.toLowerCase()
-      );
+    const normalizedOptions = q.options.map(clean);
+    const normalizedAnswer = clean(q.answer);
 
-    return isValidAnswer;
+    return normalizedOptions.includes(normalizedAnswer);
   });
 }
 
@@ -169,12 +173,13 @@ for (let i = 0; i < chunks.length; i++) {
         chunks[i]
       );
 
-    const validQuestions =
-      validateQuestions(
-        generatedQuestions
-      );
+  const generatedQuestions =
+  await generateQuizFromChunk(chunks[i]) || [];
 
-    chunkResults.push(validQuestions);
+const validQuestions =
+  Array.isArray(generatedQuestions)
+    ? validateQuestions(generatedQuestions)
+    : [];
 
   } catch (error) {
 
