@@ -23,52 +23,27 @@ function cleanText(text = "") {
 }
 
 // ================= VALIDATE QUESTIONS =================
+function validateQuestions(questions = []) {
+  return questions.filter((q) => {
+    if (
+      !q?.question ||
+      !Array.isArray(q?.options) ||
+      q.options.length !== 4 ||
+      !q?.answer ||
+      !q?.explanation
+    ) return false;
 
-function validateQuestions(
-  questions = []
-) {
+    const options = q.options.map(o => o.trim());
+    const answer = q.answer.trim();
 
-  return questions.filter(
-    (question) => {
-
-      // ================= BASIC CHECK =================
-
-      if (
-        !question?.question ||
-        !Array.isArray(question?.options) ||
-        question.options.length !== 4 ||
-        !question?.answer ||
-        !question?.explanation
-      ) {
-
-        return false;
-      }
-
-      // ================= NORMALIZE =================
-
-      const normalizedOptions =
-
-        question.options.map(
-          (option) =>
-
-            option
-              .trim()
-              .toLowerCase()
-        );
-
-      const normalizedAnswer =
-
-        question.answer
-          .trim()
-          .toLowerCase();
-
-      // ================= CHECK ANSWER EXISTS =================
-
-      return normalizedOptions.includes(
-        normalizedAnswer
+    // FIX: match loosely instead of exact string
+    const isValidAnswer =
+      options.some(opt =>
+        opt.toLowerCase() === answer.toLowerCase()
       );
-    }
-  );
+
+    return isValidAnswer;
+  });
 }
 
 // ================= REMOVE DUPLICATES =================
