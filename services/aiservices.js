@@ -1,0 +1,434 @@
+import groq from "../groq.js";
+
+// ================= CLEAN RESPONSE =================
+
+function cleanJsonResponse(text) {
+
+  if (!text) return "";
+
+  return text
+    .replace(/```json/g, "")
+    .replace(/```/g, "")
+    .replace(/\r/g, "")
+    .replace(/\n/g, " ")
+    .trim();
+}
+
+// ================= SAFE PARSER =================
+
+function safeJsonParse(text) {
+
+  try {
+
+    return JSON.parse(text);
+
+  } catch (error) {
+
+    console.log(
+      "❌ JSON Parse Error:",
+      error.message
+    );
+
+    return [];
+  }
+}
+
+// ================= DELAY =================
+
+function delay(ms) {
+
+  return new Promise((resolve) => {
+
+    setTimeout(resolve, ms);
+
+  });
+}
+
+// ================= QUIZ GENERATION =================
+
+export async function generateQuizFromChunk(
+  chunk
+) {
+
+  try {
+
+    // ================= CLEAN + LIMIT =================
+
+    const safeChunk =
+
+      chunk
+        .replace(/\s+/g, " ")
+        .trim()
+        .slice(0, 2500);
+
+    // ================= SMALL DELAY =================
+
+    await delay(1200);
+
+    // ================= AI REQUEST =================
+
+    const completion =
+
+      await groq.chat.completions.create({
+
+        model:
+  "llama-3.1-8b-instant",
+
+        temperature: 0.2,
+
+     max_tokens: 600,
+
+        messages: [
+
+          {
+            role: "system",
+
+            content: `
+You are an advanced educational AI.
+Generate ONLY valid JSON.
+
+STRICT RULES:
+
+1. No markdown
+2. No explanations outside JSON
+3. Generate exactly 8 quiz questions
+4. Each question MUST contain:
+   - question
+   - options
+   - answer
+   - explanation
+5. Exactly 4 options
+6. The answer MUST be the FULL option text
+7. NEVER return A, B, C, or D
+8. Keep explanations short
+9. Return ONLY JSON array
+
+CORRECT FORMAT:
+
+[
+  {
+    "question": "What is React?",
+    "options": [
+      "A JavaScript library",
+      "A database",
+      "A backend framework",
+      "An operating system"
+    ],
+    "answer": "A JavaScript library",
+    "explanation": "React is a frontend JavaScript library."
+  }
+]
+`,
+          },
+
+        {
+role: "user",
+
+content: `
+Educational Content:
+
+${safeChunk}
+
+Generate:
+
+* Conceptual questions
+* Theory questions
+* Application questions
+* Real understanding questions
+
+Avoid repetition.
+Make questions challenging but clear.
+`,
+},
+
+        ],
+      });
+
+    // ================= RAW RESPONSE =================
+
+    const rawText =
+
+      completion.choices[0]
+      ?.message?.content || "[]";
+
+    console.log(
+      "🧠 RAW QUIZ RESPONSE:",
+      rawText
+    );
+
+    // ================= CLEAN =================
+
+    const cleaned =
+      cleanJsonResponse(rawText);
+
+    // ================= PARSE =================
+
+    const parsed =
+      safeJsonParse(cleaned);
+
+    // ================= VALIDATION =================
+
+    if (!Array.isArray(parsed)) {
+
+      return [];
+    }
+
+    // ================= FILTER VALID QUESTIONS =================
+
+    const validQuestions =
+
+      parsed.filter((question) => {
+
+        return (
+
+          question?.question &&
+
+          Array.isArray(
+            question?.options
+          ) &&
+
+          question.options.length === 4 &&
+
+          question?.answer &&
+
+          question.options.includes(
+            question.answer
+          ) &&
+
+          question?.explanation
+        );
+      });
+
+    return validQuestions;
+
+  } catch (error) {
+
+    console.log(
+      "❌ Quiz Generation Error:",
+      error.message
+    );
+
+    return [];
+  }
+}
+
+// ================= SUMMARY =================
+
+export async function generateSummary(
+  text
+) {
+
+  try {
+
+    const safeText =
+
+      text
+        .replace(/\s+/g, " ")
+        .trim()
+        .slice(0, 4000);
+
+    await delay(800);
+
+    const completion =
+
+      await groq.chat.completions.create({
+
+        model:
+          "llama-3.1-8b-instant",
+
+        temperature: 0.3,
+
+        max_tokens: 1200,
+
+        messages: [
+
+          {
+            role: "system",
+content: `
+You are an expert AI study tutor and educational content summarizer.
+
+Your task is to create a clear, accurate, and student-friendly study summary from the provided content.
+
+Instructions:
+
+1. Use simple and easy-to-understand language.
+2. Preserve all important concepts, facts, definitions, and explanations.
+3. Explain difficult ideas in a way a beginner can understand.
+4. Organize the summary into logical paragraphs.
+5. Keep the summary concise while retaining essential information.
+6. Focus on learning and comprehension rather than shortening aggressively.
+7. Remove unnecessary repetition.
+8. If examples are important for understanding, include a simplified version.
+9. Do not invent information that is not present in the source.
+10. Return plain text only.
+
+Output Requirements:
+
+- No markdown.
+- No bullet points.
+- No numbered lists.
+- No headings using #.
+- No special formatting characters.
+- Use normal paragraphs separated by blank lines.
+- Write as if creating study notes for a student preparing for an exam.
+`,
+          },
+
+          {
+            role: "user",
+
+            content: `
+Summarize this educational content:
+
+${safeText}
+`,
+          },
+        ],
+      });
+
+    // ================= CLEAN SUMMARY =================
+
+    const summary =
+
+      completion.choices[0]
+      ?.message?.content
+      ?.replace(/\*/g, "")
+      ?.replace(/#/g, "")
+      ?.trim();
+
+    return (
+      summary ||
+      "Summary could not be generated."
+    );
+
+  } catch (error) {
+
+    console.log(
+      "❌ Summary Error:",
+      error.message
+    );
+
+    return "Summary could not be generated.";
+  }
+}
+
+// ================= FLASHCARDS =================
+
+export async function generateFlashcards(
+  text
+) {
+
+  try {
+
+    const safeText =
+
+      text
+        .replace(/\s+/g, " ")
+        .trim()
+        .slice(0, 3000);
+
+    await delay(800);
+
+    const completion =
+
+      await groq.chat.completions.create({
+
+        model:
+          "llama-3.1-8b-instant",
+
+        temperature: 0.2,
+
+        max_tokens: 1000,
+
+        messages: [
+
+          {
+            role: "system",
+
+            content: `
+You are an AI flashcard generator.
+
+Return ONLY valid JSON.
+
+STRICT RULES:
+
+1. No markdown
+2. No explanations outside JSON
+3. Generate exactly 15 flashcards
+4. Keep answers concise
+5. Return ONLY JSON array
+
+VALID FORMAT:
+
+[
+  {
+    "question": "Question",
+    "answer": "Answer"
+  }
+]
+`,
+          },
+
+          {
+            role: "user",
+
+            content: `
+Generate flashcards from this educational content:
+
+${safeText}
+`,
+          },
+        ],
+      });
+
+    // ================= RAW RESPONSE =================
+
+    const rawText =
+
+      completion.choices[0]
+      ?.message?.content || "[]";
+
+    console.log(
+      "🧠 RAW FLASHCARD RESPONSE:",
+      rawText
+    );
+
+    // ================= CLEAN =================
+
+    const cleaned =
+      cleanJsonResponse(rawText);
+
+    // ================= PARSE =================
+
+    const parsed =
+      safeJsonParse(cleaned);
+
+    if (!Array.isArray(parsed)) {
+
+      return [];
+    }
+
+    // ================= VALIDATE =================
+
+    const validFlashcards =
+
+      parsed.filter((card) => {
+
+        return (
+          card?.question &&
+          card?.answer
+        );
+      });
+
+    return validFlashcards;
+
+  } catch (error) {
+
+    console.log(
+      "❌ Flashcard Error:",
+      error.message
+    );
+
+    return [];
+  }
+}
