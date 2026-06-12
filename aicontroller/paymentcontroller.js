@@ -23,17 +23,62 @@ export async function verifyPayment(req, res) {
 
     const payment = response.data.data;
 
-    if (!payment || payment.status !== "success") {
-      return res.status(400).json({
-        success: false,
-        message: "Payment not successful",
-      });
-    }
 
+    const { data: existingPayment } =
+  await supabase
+    .from("payments")
+    .select("id")
+    .eq(
+      "reference",
+      payment.reference
+    )
+    .maybeSingle();
+
+if (existingPayment) {
+  return res.json({
+    success: true,
+    plan: "pro",
+  });
+}
+
+if (
+  !payment ||
+  payment.status !== "success"
+) {
+  return res.status(400).json({
+    success: false,
+    message: "Payment not successful",
+  });
+}
+
+const {
+  data: profile
+} = await supabase
+  .from("profiles")
+  .select("*")
+  .eq(
+    "email",
+    payment.customer.email
+  )
+  .single();
     await supabase
-      .from("profiles")
-      .update({ plan: "pro" })
-      .eq("id", userId);
+.from("profiles")
+.update({
+  plan: "pro"
+})
+.eq("id", profile.id);
+
+await supabase
+.from("payments")
+.insert([
+  {
+    user_id: userId,
+    email: payment.customer.email,
+    reference: payment.reference,
+    amount: payment.amount / 100,
+    status: payment.status,
+  },
+]);
 
     return res.json({
       success: true,
@@ -47,5 +92,91 @@ export async function verifyPayment(req, res) {
       success: false,
       message: "Verification failed",
     });
+  }
+}
+
+
+
+export async function paystackWebhook(
+  req,
+  res
+) {
+  try {
+
+    const event = req.body;
+
+    if (
+      event.event ===
+      "charge.success"
+    ) {
+
+      const payment =
+        event.data;
+
+      const {
+        data: profile
+      } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq(
+          "email",
+          payment.customer.email
+        )
+        .maybeSingle();
+
+      if (profile) {
+
+        const {
+          data: existing
+        } = await supabase
+          .from("payments")
+          .select("id")
+          .eq(
+            "reference",
+            payment.reference
+          )
+          .maybeSingle();
+
+        if (!existing) {
+
+          await supabase
+            .from("profiles")
+            .update({
+              plan: "pro"
+            })
+            .eq(
+              "id",
+              profile.id
+            );
+
+          await supabase
+            .from("payments")
+            .insert([
+              {
+                user_id:
+                  profile.id,
+                email:
+                  payment.customer.email,
+                reference:
+                  payment.reference,
+                amount:
+                  payment.amount /
+                  100,
+                status:
+                  payment.status,
+              },
+            ]);
+        }
+      }
+    }
+
+    return res.sendStatus(200);
+
+  } catch (error) {
+
+    console.log(error);
+
+    return res.sendStatus(500);
+
   }
 }

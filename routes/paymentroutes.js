@@ -2,6 +2,7 @@ import express from "express";
 
 import {
   verifyPayment,
+  paystackWebhook
 } from "../aicontroller/paymentcontroller.js";
 
 const router =
@@ -12,4 +13,8 @@ router.post(
   verifyPayment
 );
 
+router.post(
+  "/paystack/webhook",
+  paystackWebhook
+);
 export default router;
