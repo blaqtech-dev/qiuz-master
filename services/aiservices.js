@@ -224,79 +224,56 @@ export async function generateSummary(
   try {
 
     const safeText =
-
       text
         .replace(/\s+/g, " ")
         .trim()
-        .slice(0, 4000);
-
-    await delay(800);
+        .slice(0, 2500);
 
     const completion =
-
       await groq.chat.completions.create({
 
         model:
           "llama-3.1-8b-instant",
 
-        temperature: 0.3,
+        temperature: 0.2,
 
-        max_tokens: 1200,
+        max_tokens: 800,
 
         messages: [
 
           {
             role: "system",
-content: `
-You are an expert AI study tutor and educational content summarizer.
 
-Your task is to create a clear, accurate, and student-friendly study summary from the provided content.
+            content: `
+Create a study summary.
 
-Instructions:
+Requirements:
 
-1. Use simple and easy-to-understand language.
-2. Preserve all important concepts, facts, definitions, and explanations.
-3. Explain difficult ideas in a way a beginner can understand.
-4. Organize the summary into logical paragraphs.
-5. Keep the summary concise while retaining essential information.
-6. Focus on learning and comprehension rather than shortening aggressively.
-7. Remove unnecessary repetition.
-8. If examples are important for understanding, include a simplified version.
-9. Do not invent information that is not present in the source.
-10. Return plain text only.
-
-Output Requirements:
-
-- No markdown.
-- No bullet points.
-- No numbered lists.
-- No headings using #.
-- No special formatting characters.
-- Use normal paragraphs separated by blank lines.
-- Write as if creating study notes for a student preparing for an exam.
-`,
+- Plain text only
+- No markdown
+- No bullet points
+- Explain key concepts
+- Keep it educational
+- Keep it concise
+`
           },
 
           {
             role: "user",
 
-            content: `
-Summarize this educational content:
-
-${safeText}
-`,
-          },
-        ],
+            content: safeText
+          }
+        ]
       });
 
-    // ================= CLEAN SUMMARY =================
+    console.log(
+      "SUMMARY RESPONSE:",
+      completion
+    );
 
     const summary =
-
-      completion.choices[0]
+      completion?.choices?.[0]
       ?.message?.content
-      ?.replace(/\*/g, "")
-      ?.replace(/#/g, "")
       ?.trim();
 
     return (
@@ -307,8 +284,8 @@ ${safeText}
   } catch (error) {
 
     console.log(
-      "❌ Summary Error:",
-      error.message
+      "❌ SUMMARY ERROR:",
+      error
     );
 
     return "Summary could not be generated.";

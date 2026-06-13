@@ -332,13 +332,14 @@ for (let i = 0; i < chunks.length; i++) {
 
     // ================= SUCCESS CHECK =================
 
-    const success =
-
-      finalQuestions.length > 0 ||
-
-      flashcards.length > 0 ||
-
-      summary !== "";
+   const success =
+  finalQuestions.length > 0 ||
+  flashcards.length > 0 ||
+  (
+    summary &&
+    summary !==
+    "Summary could not be generated."
+  );
 
     // ================= RESPONSE =================
 
