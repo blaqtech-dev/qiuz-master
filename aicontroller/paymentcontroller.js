@@ -73,24 +73,30 @@ const {
 }
 
 
-    await supabase
-.from("profiles")
-.update({
-  plan: "pro"
-})
-.eq("id", profile.id);
+ const { data: insertedPayment, error: insertError } =
+  await supabase
+    .from("payments")
+    .insert([
+      {
+        user_id: profile.id,
+        email: payment.customer.email,
+        reference: payment.reference,
+        amount: payment.amount / 100,
+        status: payment.status,
+      },
+    ])
+    .select();
 
-await supabase
-.from("payments")
-.insert([
-  {
-    user_id: userId,
-    email: payment.customer.email,
-    reference: payment.reference,
-    amount: payment.amount / 100,
-    status: payment.status,
-  },
-]);
+console.log(
+  "INSERTED PAYMENT:",
+  insertedPayment
+);
+
+console.log(
+  "INSERT ERROR:",
+  insertError
+);
+
 
     return res.json({
       success: true,
