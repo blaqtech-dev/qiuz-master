@@ -36,7 +36,12 @@ export async function analyzeNotes(
         });
     }
 
-    let fullText = "";
+let pages = [];
+
+pages.push({
+  page: i + 1,
+  text: result.data.text
+});
 
     for (
       let i = 0;
@@ -83,7 +88,7 @@ export async function analyzeNotes(
           );
 
         fullText +=
-          "\n\n";
+`\n\nPAGE ${i + 1}\n\n`;
 
         fullText +=
           result.data.text;
@@ -131,15 +136,12 @@ export async function analyzeNotes(
         title
       );
 
-    return res.json({
-
-      success:true,
-
-      summary,
-
-      noteText:
-        fullText,
-    });
+   return res.json({
+  success:true,
+  summary,
+  noteText:fullText,
+  pages
+});
 
   } catch (error) {
 
