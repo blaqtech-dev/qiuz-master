@@ -36,12 +36,9 @@ export async function analyzeNotes(
         });
     }
 
-let pages = [];
+let fullText = "";
 
-pages.push({
-  page: i + 1,
-  text: result.data.text
-});
+let pages = [];
 
     for (
       let i = 0;
@@ -81,17 +78,22 @@ pages.push({
             optimized
           );
 
-        const result =
-          await Tesseract.recognize(
-            optimized,
-            "eng"
-          );
+     const result =
+  await Tesseract.recognize(
+    optimized,
+    "eng"
+  );
 
-        fullText +=
-`\n\nPAGE ${i + 1}\n\n`;
+pages.push({
+  page: i + 1,
+  text: result.data.text,
+});
 
-        fullText +=
-          result.data.text;
+fullText +=
+  `\n\nPAGE ${i + 1}\n\n`;
+
+fullText +=
+  result.data.text;
 
       } catch (err) {
 
