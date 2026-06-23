@@ -48,30 +48,39 @@ export async function extractPdfUsingOCR(
 
     let fullText = "";
 
-    for (
-      let page = 1;
-      page <= 20;
-      page++
-    ) {
+   for (let page = 1; page <= 20; page++) {
 
-      try {
+  try {
 
-        const result =
-          await converter(page);
+    console.log("Converting page:", page);
 
-        const text =
-          await extractTextFromImage(
-            result.path
-          );
+    const result = await converter(page);
 
-        fullText +=
-          text + "\n";
+    console.log("Image created:", result);
 
-      } catch {
+    const text =
+      await extractTextFromImage(
+        result.path
+      );
 
-        break;
-      }
-    }
+    console.log(
+      "Page OCR Length:",
+      text.length
+    );
+
+    fullText += text + "\n";
+
+  } catch (error) {
+
+    console.log(
+      "PAGE ERROR:",
+      page,
+      error.message
+    );
+
+    break;
+  }
+}
 
     return fullText;
 
