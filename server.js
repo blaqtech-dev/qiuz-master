@@ -21,6 +21,12 @@ from "./routes/imageairoutes.js";
 
 import imageChatRoutes
 from "./routes/imagechatroutes.js";
+
+import scanNoteRoutes
+from "./routes/scannoteroutes.js";
+
+import scanNoteChatRoutes
+from "./routes/scannotechatroutes.js";
 // ================= LOAD ENV =================
 
 dotenv.config();
@@ -122,6 +128,16 @@ app.use(
 app.use(
   "/api",
   imageChatRoutes
+);
+
+app.use(
+  "/api",
+  scanNoteRoutes
+);
+
+app.use(
+  "/api",
+  scanNoteChatRoutes
 );
 
 
