@@ -73,10 +73,10 @@ router.post(
 
   "/scan-notes",
 
-  upload.array(
-    "images",
-    50
-  ),
+ upload.array(
+  "images",
+  30
+),
 
   analyzeNotes
 );

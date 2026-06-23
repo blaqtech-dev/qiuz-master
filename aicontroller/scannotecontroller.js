@@ -71,10 +71,10 @@ console.log("FILES RECEIVED:", files.length);
             quality:90,
           })
 
-          .resize({
-            width:1600,
-            withoutEnlargement:true,
-          })
+         .resize({
+  width:1100,
+  withoutEnlargement:true,
+})
 
           .toFile(
             optimized
