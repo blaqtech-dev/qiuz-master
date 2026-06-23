@@ -40,6 +40,8 @@ let fullText = "";
 
 let pages = [];
 
+console.log("FILES RECEIVED:", files.length);
+
     for (
       let i = 0;
       i < files.length;
