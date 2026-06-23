@@ -114,24 +114,14 @@ export async function extractPdfFromUrl(
     let text =
       pdfData.text || "";
 
-
-   if (
+if (
   !text ||
   text.trim().length < 100
 ) {
 
-  console.log(
-    "⚠ No PDF text layer found."
+  throw new Error(
+    "Scanned PDF detected"
   );
-
-  console.log(
-    "⚠ Falling back to OCR..."
-  );
-
-  return {
-    needsOCR: true,
-    pdfBuffer,
-  };
 }
 
     console.log(

@@ -1,6 +1,6 @@
 
 import { chunkText } from "../utils/chunktext.js";
-import { extractPdfUsingOCR } from "../services/pdfocrservices.js";
+
 import {
   generateQuizFromChunk,
   generateSummary,
@@ -114,42 +114,8 @@ export async function generateQuiz(
     }
 
     // ================= DOWNLOAD + EXTRACT PDF =================
-const extracted =
+const rawText =
   await extractPdfFromUrl(pdfUrl);
-
-let rawText = "";
-
-if (typeof extracted === "string") {
-
-  console.log(
-    "NORMAL PDF TEXT LENGTH:",
-    extracted.length
-  );
-
-  rawText = extracted;
-
-} else if (extracted?.needsOCR) {
-
-  console.log(
-    "⚡ OCR MODE STARTED"
-  );
-
-  rawText =
-    await extractPdfUsingOCR(
-      extracted.pdfBuffer
-    );
-
-  console.log(
-    "OCR TEXT LENGTH:",
-    rawText?.length
-  );
-
-  console.log(
-    "OCR TEXT SAMPLE:",
-    rawText?.slice(0, 500)
-  );
-}
-
 
 
 
